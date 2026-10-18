@@ -2,29 +2,23 @@ import java.net.*;
 import java.util.*;
 
 class TimeServer {
-    public static void main(String args[]) throws Exception {
-
+    public static void main(String[] args) throws Exception {
         DatagramSocket ds = new DatagramSocket(5000);
-        System.out.println("Time Server is running on port 5000...");
+        System.out.println("Time Server Started");
 
         while (true) {
-            byte[] receive = new byte[100];
+            byte[] buf = new byte[100];
+            DatagramPacket dp = new DatagramPacket(buf, buf.length);
+            ds.receive(dp); // Receive request
 
-            DatagramPacket dp = new DatagramPacket(receive, receive.length);
-            ds.receive(dp);
-
-            // Create a thread for each client
             new Thread(() -> {
                 try {
-                    String time = new Date().toString();
-                    byte[] send = time.getBytes();
+                    // Get server time
+                    byte[] data = new Date().toString().getBytes();
 
+                    // Send time to client
                     DatagramPacket reply = new DatagramPacket(
-                            send,
-                            send.length,
-                            dp.getAddress(),
-                            dp.getPort());
-
+                        data, data.length, dp.getAddress(), dp.getPort());
                     ds.send(reply);
                 } catch (Exception e) {
                     e.printStackTrace();
