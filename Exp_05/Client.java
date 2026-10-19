@@ -1,82 +1,35 @@
-import java.io.*;
 import java.net.*;
+import java.io.*;
 import java.util.*;
 
-public class client {
-
+class MatrixClient {
     public static void main(String[] args) throws Exception {
-
-        Socket socket = new Socket("localhost",9002);
-
+        Socket s = new Socket("localhost", 6000);
+        BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        PrintWriter out = new PrintWriter(s.getOutputStream(), true);
         Scanner sc = new Scanner(System.in);
+        Random r = new Random();
 
-        Random rand = new Random();
-
-        System.out.print("Enter order of matrix : ");
+        System.out.print("Enter N: ");
         int n = sc.nextInt();
+        int[][] a = new int[n][n];
 
-        int[][] matrix = new int[n][n];
+        out.println(n);
+        System.out.println("Matrix:");
 
-        for(int i = 0; i < n; i++)
-        {
-            for(int j = 0; j < n; j++)
-            {
-                matrix[i][j] = rand.nextInt(50) + 1;
+        for (int i = 0; i < n; i++) {
+            String row = "";
+            for (int j = 0; j < n; j++) {
+                a[i][j] = r.nextInt(50) + 1;
+                System.out.print(a[i][j] + " ");
+                row += a[i][j] + (j == n - 1 ? "" : " ");
             }
-        }
-
-        int type = rand.nextInt(4);
-
-        switch(type)
-        {
-            case 0:         // Upper
-                for(int i = 0; i < n; i++)
-                    for(int j = 0; j < n; j++)
-                        if(i > j)
-                            matrix[i][j] = 0;
-                break;
-
-            case 1:         // Lower
-                for(int i = 0; i < n; i++)
-                    for(int j = 0; j < n; j++)
-                        if(i < j)
-                            matrix[i][j] = 0;
-                break;
-
-            case 2:         // Diagonal
-                for(int i = 0; i < n; i++)
-                    for(int j = 0; j < n; j++)
-                        if(i != j)
-                            matrix[i][j] = 0;
-                break;
-
-            default:        // Normal Matrix
-                break;
-        }
-
-        System.out.println("\nGenerated Matrix");
-
-        for(int i = 0; i < n; i++)
-        {
-            for(int j = 0; j < n; j++)
-                System.out.print(matrix[i][j] + " ");
             System.out.println();
+            out.println(row);
         }
 
-        ObjectOutputStream out =
-                new ObjectOutputStream(socket.getOutputStream());
-
-        out.writeInt(n);
-        out.writeObject(matrix);
-        out.flush();
-
-        DataInputStream in =
-                new DataInputStream(socket.getInputStream());
-
-        String result = in.readUTF();
-
-        System.out.println("\nMatrix Type : " + result);
-
-        socket.close();
+        System.out.println("Result: " + in.readLine());
+        s.close();
+        sc.close();
     }
 }
