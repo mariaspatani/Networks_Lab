@@ -1,66 +1,28 @@
-// Import networking classes
 import java.net.*;
 
-public class UDPServer {
-
-    public static void main(String args[]) throws Exception {
-
-        // Create a UDP socket on port 9876
-        // The server listens for client requests on this port
-        DatagramSocket socket = new DatagramSocket(9876);
-
-        // Create a byte array to receive client data
-        byte[] receiveData = new byte[1024];
-
-        // Display server status
+class UDPServer {
+    public static void main(String[] args) throws Exception {
+        DatagramSocket ds = new DatagramSocket(9876);
         System.out.println("Server Started...");
 
-        // Create an empty packet to receive data
-        DatagramPacket receivePacket =
-                new DatagramPacket(receiveData, receiveData.length);
+        while (true) {
+            byte[] buf = new byte[1024];
+            DatagramPacket dp = new DatagramPacket(buf, buf.length);
+            ds.receive(dp);
 
-        // Wait until a client sends a message
-        socket.receive(receivePacket);
+            String msg = new String(dp.getData(), 0, dp.getLength());
+            System.out.println("Received: " + msg);
 
-        // Convert the received bytes into a String
-        String sentence = new String(receivePacket.getData(), 0,
-                receivePacket.getLength());
+            msg = msg.replace("tbh", "to be honest").replace("ig", "I guess")
+                     .replace("tbf", "to be fair").replace("atm", "at the moment")
+                     .replace("irl", "in real life").replace("lol", "laughing out loud")
+                     .replace("asap", "as soon as possible").replace("omg", "oh my God")
+                     .replace("ttyl", "talk to you later").replace("idk", "I don't know")
+                     .replace("nvm", "never mind").replace("idc", "I don't care");
 
-        // Display the received sentence
-        System.out.println("Received: " + sentence);
-
-        // Replace abbreviations with their full forms
-        sentence = sentence.replace("tbh", "to be honest");
-        sentence = sentence.replace("ig", "I guess");
-        sentence = sentence.replace("tbf", "to be fair");
-        sentence = sentence.replace("atm", "at the moment");
-        sentence = sentence.replace("irl", "in real life");
-        sentence = sentence.replace("lol", "laughing out loud");
-        sentence = sentence.replace("asap", "as soon as possible");
-        sentence = sentence.replace("omg", "oh my God");
-        sentence = sentence.replace("ttyl", "talk to you later");
-        sentence = sentence.replace("idk", "I don't know");
-        sentence = sentence.replace("nvm", "never mind");
-        sentence = sentence.replace("idc", "I don't care");
-
-        // Convert the translated sentence into bytes
-        byte[] sendData = sentence.getBytes();
-
-        // Create a packet to send the translated sentence back
-        // receivePacket.getAddress() -> Client's IP Address
-        // receivePacket.getPort() -> Client's Port Number
-        DatagramPacket sendPacket =
-                new DatagramPacket(sendData, sendData.length,
-                        receivePacket.getAddress(),
-                        receivePacket.getPort());
-
-        // Send the translated sentence to the client
-        socket.send(sendPacket);
-
-        // Display confirmation message
-        System.out.println("Translation Sent.");
-
-        // Close the socket
-        socket.close();
+            byte[] data = msg.getBytes();
+            ds.send(new DatagramPacket(data, data.length, dp.getAddress(), dp.getPort()));
+            System.out.println("Translation Sent.");
+        }
     }
 }
