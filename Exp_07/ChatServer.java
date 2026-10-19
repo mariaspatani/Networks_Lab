@@ -1,91 +1,38 @@
-import java.io.*;
 import java.net.*;
+import java.io.*;
 import java.util.*;
 
-public class ChatServer {
+class ChatServer {
+    static Vector<PrintWriter> v = new Vector<>();
 
-    static Vector<ClientHandler> clients = new Vector<>();
+    public static void main(String[] args) throws Exception {
+        ServerSocket ss = new ServerSocket(5000);
+        System.out.println("Server Started");
 
-    public static void main(String[] args) {
-        try {
-            ServerSocket serverSocket = new ServerSocket(5000);
-            System.out.println("Server started...");
-            System.out.println("Waiting for clients...");
+        while (true) {
+            Socket s = ss.accept();
+            new Thread(() -> {
+                PrintWriter out = null; String name = "";
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                    out = new PrintWriter(s.getOutputStream(), true);
+                    name = in.readLine(); v.add(out);
+                    System.out.println(name + " joined the chat");
+                    for (PrintWriter p : v) if (p != out) p.println(name + " joined the chat");
 
-            while (true) {
-                Socket socket = serverSocket.accept();
-                System.out.println("New client connected.");
-
-                ClientHandler client = new ClientHandler(socket);
-                clients.add(client);
-
-                Thread t = new Thread(client);
-                t.start();
-            }
-
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    static class ClientHandler implements Runnable {
-
-        Socket socket;
-        BufferedReader in;
-        PrintWriter out;
-        String name;
-
-        ClientHandler(Socket socket) {
-            this.socket = socket;
-
-            try {
-                in = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream()));
-                out = new PrintWriter(socket.getOutputStream(), true);
-
-            } catch (Exception e) {
-                System.out.println(e);
-            }
-        }
-
-        public void run() {
-
-            try {
-                name = in.readLine();
-
-                broadcast("** " + name + " joined the chat **", this);
-
-                String message;
-
-                while ((message = in.readLine()) != null) {
-
-                    if (message.equalsIgnoreCase("exit"))
-                        break;
-
-                    broadcast(name + ": " + message, this);
+                    String msg;
+                    while ((msg = in.readLine()) != null && !msg.equals("/exit"))
+                        for (PrintWriter p : v) if (p != out) p.println(name + ": " + msg);
+                } catch (Exception e) {
+                } finally {
+                    if (out != null) {
+                        v.remove(out);
+                        System.out.println(name + " left the chat");
+                        for (PrintWriter p : v) p.println(name + " left the chat");
+                    }
+                    try { s.close(); } catch (Exception e) {}
                 }
-
-                clients.remove(this);
-
-                broadcast("** " + name + " left the chat **", this);
-
-                socket.close();
-
-            } catch (Exception e) {
-                System.out.println(e);
-            }
+            }).start();
         }
-    }
-
-    static void broadcast(String message, ClientHandler sender) {
-
-        for (ClientHandler client : clients) {
-
-            if (client != sender) {
-                client.out.println(message);
-            }
-        }
-
-        System.out.println(message);
     }
 }
