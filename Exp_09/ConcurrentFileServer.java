@@ -1,7 +1,7 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
-public class ConcurrentServerr{
+public class ConcurrentServer{
   public static void main(String[] args)throws Exception{
     ServerSocket ss= new ServerSocket(5000);
     long pid =ProcessHandle.current().pid();
