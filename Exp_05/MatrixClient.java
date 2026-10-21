@@ -15,7 +15,7 @@ public class MatrixClient{
     System.out.println("\nMatrix: ");
     for (int i=0;i<n;i++){
       for(int j=0;j<n;j++){
-        a[i][j]=r.nextInt(50)+1;
+        a[i][j]=r.nextInt(50);
         System.out.printf("%4d",a[i][j]);
       }
       System.out.println();
